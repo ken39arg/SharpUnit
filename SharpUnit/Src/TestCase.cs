@@ -9,10 +9,11 @@
 using System;
 using System.Reflection;
 using System.Diagnostics;
+using System.Collections;
 
 namespace SharpUnit
 {
-    public class TestCase
+    public class TestCase : ITestCase
     {
         // Members
         private string m_testMethod = null;     // Name of the test method to run.
@@ -44,6 +45,11 @@ namespace SharpUnit
             m_testMethod = method;
         }
 
+        private TestResult _TestResult;
+        public TestResult GetTestResult() {
+            return _TestResult;
+        }
+
         /**
          * Run the test, catching all exceptions.
          * 
@@ -51,7 +57,7 @@ namespace SharpUnit
          * 
          * @return TestResult, the result of the test.
          */
-        public TestResult Run(TestResult result)
+        public IEnumerator Run(TestResult result)
         {
             // If test method invalid
             if (null == m_testMethod)
@@ -125,12 +131,17 @@ namespace SharpUnit
                     // Error
                     Assert.NotNull(m_caughtEx, "Did not catch expected exception: " + Assert.Exception);
                 }
+
+                UnityEngine.Debug.Log("[SharpUnit] " + type.Name + "." + method.Name + " runs ok");
             }
             catch (Exception ex)
             {
                 // Track test failure
                 result.TestFailed( ex );
+                UnityEngine.Debug.LogWarning("[SharpUnit] " + type.Name + "." + method.Name + " failed");
             }
+
+
 
             // Clear expected exception
             Assert.Exception = null;
@@ -138,7 +149,8 @@ namespace SharpUnit
             // Post-test cleanup
             TearDown();
 
-            return result;
+            _TestResult = result;
+            yield break;
         }
     } 
 }

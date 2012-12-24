@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file TestRunner.cs
  * 
  * Unity3D unit test runner.
@@ -6,25 +6,46 @@
  * Drag this onto an empty GameObject to run tests.
  */
 
-using UnityEngine;
+using System;
 using System.Collections;
+using System.Reflection;
 using SharpUnit;
+using UnityEngine;
 
 public class Unity3D_TestRunner : MonoBehaviour 
 {
     /**
      * Initialize class resources.
      */
-	void Start() 
+    public IEnumerator StartTest() 
     {
         // Create test suite
-        TestSuite suite = new TestSuite();
+        Unity3D_TestSuite suite = GameObject.Find("TestRunner").GetComponent<Unity3D_TestSuite>();
 
-        // Example: Add tests to suite
-        //suite.AddAll(new Dummy_Test());
+        // For each assembly in this app domain
+        foreach (Assembly assem in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            // For each type in the assembly
+            foreach (Type type in assem.GetTypes())
+            {
+                // If this is a valid test case
+                // i.e. derived from TestCase and instantiable
+                if (typeof(UnityTestCase).IsAssignableFrom(type) &&
+                    type != typeof(UnityTestCase) && !type.IsAbstract)
+                {
+                    // Add tests to suite
+                    UnityTestCase test = GameObject.Find("TestRunner").AddComponent(type.Name) as UnityTestCase;
+                    suite.AddAll(test);
+                } else if (typeof(TestCase).IsAssignableFrom(type) &&
+                           type != typeof(TestCase) && !type.IsAbstract) {
+                    suite.AddAll(type.GetConstructor(new Type[0]).Invoke(new object[0]) as TestCase);
+                }
+            }
+        }
 
         // Run the tests
-        TestResult res = suite.Run(null);
+        yield return StartCoroutine(suite.Run(null));
+        TestResult res = suite.TestResult;
 
         // Report results
         Unity3D_TestReporter reporter = new Unity3D_TestReporter();
