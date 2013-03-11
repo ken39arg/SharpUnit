@@ -14,13 +14,18 @@ using UnityEngine;
 
 public class Unity3D_TestRunner : MonoBehaviour 
 {
+
+    void Start() {
+        StartCoroutine(StartTest());
+    }
+
     /**
      * Initialize class resources.
      */
     public IEnumerator StartTest() 
     {
         // Create test suite
-        Unity3D_TestSuite suite = GameObject.Find("TestRunner").GetComponent<Unity3D_TestSuite>();
+        Unity3D_TestSuite suite = gameObject.AddComponent<Unity3D_TestSuite>();
 
         // For each assembly in this app domain
         foreach (Assembly assem in AppDomain.CurrentDomain.GetAssemblies())
@@ -34,10 +39,12 @@ public class Unity3D_TestRunner : MonoBehaviour
                     type != typeof(UnityTestCase) && !type.IsAbstract)
                 {
                     // Add tests to suite
-                    UnityTestCase test = GameObject.Find("TestRunner").AddComponent(type.Name) as UnityTestCase;
+                    UnityTestCase test = gameObject.AddComponent(type.Name) as UnityTestCase;
                     suite.AddAll(test);
                 } else if (typeof(TestCase).IsAssignableFrom(type) &&
-                           type != typeof(TestCase) && !type.IsAbstract) {
+                    type != typeof(TestCase) &&
+                    !type.IsAbstract)
+                {
                     suite.AddAll(type.GetConstructor(new Type[0]).Invoke(new object[0]) as TestCase);
                 }
             }
