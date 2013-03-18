@@ -27,6 +27,18 @@ public class Unity3D_TestRunner : MonoBehaviour
         // Create test suite
         Unity3D_TestSuite suite = gameObject.AddComponent<Unity3D_TestSuite>();
 
+        AddCompornents(suite);
+
+        // Run the tests
+        yield return StartCoroutine(suite.Run(null));
+        TestResult res = suite.TestResult;
+
+        // Report results
+        Unity3D_TestReporter reporter = new Unity3D_TestReporter();
+        reporter.LogResults(res);
+    }
+
+    protected virtual void AddCompornents(Unity3D_TestSuite suite) {
         // For each assembly in this app domain
         foreach (Assembly assem in AppDomain.CurrentDomain.GetAssemblies())
         {
@@ -49,13 +61,5 @@ public class Unity3D_TestRunner : MonoBehaviour
                 }
             }
         }
-
-        // Run the tests
-        yield return StartCoroutine(suite.Run(null));
-        TestResult res = suite.TestResult;
-
-        // Report results
-        Unity3D_TestReporter reporter = new Unity3D_TestReporter();
-        reporter.LogResults(res);
-	}
+    }
 }
