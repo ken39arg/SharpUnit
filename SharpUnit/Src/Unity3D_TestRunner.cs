@@ -24,6 +24,8 @@ public class Unity3D_TestRunner : MonoBehaviour
      */
     public IEnumerator StartTest() 
     {
+        bool defalutRunInBackground = Application.runInBackground;
+        Application.runInBackground = true;
         // Create test suite
         Unity3D_TestSuite suite = gameObject.AddComponent<Unity3D_TestSuite>();
 
@@ -36,6 +38,7 @@ public class Unity3D_TestRunner : MonoBehaviour
         // Report results
         Unity3D_TestReporter reporter = new Unity3D_TestReporter();
         reporter.LogResults(res);
+        Application.runInBackground = defalutRunInBackground;
     }
 
     protected virtual void AddCompornents(Unity3D_TestSuite suite) {
