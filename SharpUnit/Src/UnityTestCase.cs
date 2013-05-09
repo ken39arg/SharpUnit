@@ -10,7 +10,10 @@ using System;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+
+using Object = System.Object;
 
 namespace SharpUnit
 {
@@ -24,14 +27,20 @@ namespace SharpUnit
             return _TestResult;
         }
 
-        protected bool _Failed = true;
-        protected TestException _Exception = null;
-        protected void MarkAsFailure(TestException e) {
-            _Failed = true;
-            _Exception = e;
+        protected List<TestException> m_ExList = new List<TestException>();
+        protected void MarkAsFailure(TestException e) 
+        {
+            e.Description  = "Failed: " + GetType() + "." + m_testMethod + "()";
+            if (null != e.StackFrame)
+            {
+                // Add stack frame info
+                e.Description += " in File: " + System.IO.Path.GetFileName( e.StackFrame.GetFileName() );
+                e.Description += " on Line: " + e.StackFrame.GetFileLineNumber();
+            }
+            m_ExList.Add(e);
         }
+
         protected void DoneTesting() {
-            _Failed = false;
         }
 
         /**
@@ -100,15 +109,15 @@ namespace SharpUnit
 
             yield return StartCoroutine((IEnumerator)method.Invoke(this, null));
 
-            if (_Exception != null) {
-                result.TestFailed(_Exception);
+            if (0 < m_ExList.Count)
+            {
+                foreach (TestException te in m_ExList)
+                {
+                    result.TestFailed(te);
+                }
+                m_ExList.Clear();
                 UnityEngine.Debug.LogWarning("[SharpUnit] " + type.Name + "." + method.Name + " failed");
 
-            } else if (_Failed) {
-                result.TestFailed(new TestException("DoneTesting for " + type.Name + "." + method.Name +
-                                                    " not called."));
-                UnityEngine.Debug.LogWarning("[SharpUnit] " + type.Name + "." + method.Name +
-                                             " might be failed");
             } else {
                 UnityEngine.Debug.Log("[SharpUnit] " + type.Name + "." + method.Name + " runs ok");
             }
@@ -121,5 +130,208 @@ namespace SharpUnit
 
             _TestResult = result;
         }
+
+        #region Assert alias
+        public void True(bool boolean)
+        {
+            try {
+                Assert.True(boolean);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void True(bool boolean, string msg)
+        {
+            try {
+                Assert.True(boolean, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void False(bool boolean)
+        {
+            try {
+                Assert.False(boolean);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void False(bool boolean, string msg)
+        {
+            try {
+                Assert.False(boolean, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Null(Object obj)
+        {
+            try {
+                Assert.Null(obj);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Null(Object obj, string msg)
+        {
+            try {
+                Assert.Null(obj, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void NotNull(Object obj)
+        {
+            try {
+                Assert.NotNull(obj);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void NotNull(Object obj, string msg)
+        {
+            try {
+                Assert.NotNull(obj, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(int wanted, int got)
+        {
+            try {
+                Assert.Equal(wanted, got);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(int wanted, int got, string msg)
+        {
+            try {
+                Assert.Equal(wanted, got, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(float wanted, float got)
+        {
+            try {
+                Assert.Equal(wanted, got);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(float wanted, float got, string msg)
+        {
+            try {
+                Assert.Equal(wanted, got, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(string wanted, string got)
+        {
+            try {
+                Assert.Equal(wanted, got);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(string wanted, string got, string msg)
+        {
+            try {
+                Assert.Equal(wanted, got, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(bool wanted, bool got)
+        {
+            try {
+                Assert.Equal(wanted, got);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(bool wanted, bool got, string msg)
+        {
+            try {
+                Assert.Equal(wanted, got, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(Exception wanted, Exception got)
+        {
+            try {
+                Assert.Equal(wanted, got);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(Exception wanted, Exception got, string msg)
+        {
+            try {
+                Assert.Equal(wanted, got, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(Object wanted, Object got)
+        {
+            try {
+                Assert.Equal(wanted, got);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        public void Equal(Object wanted, Object got, string msg)
+        {
+            try {
+                Assert.Equal(wanted, got, msg);
+            }
+            catch (TestException e)
+            {
+                MarkAsFailure(e);
+            }
+        }
+        #endregion
     } 
 }

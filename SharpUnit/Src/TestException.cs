@@ -42,11 +42,12 @@ namespace SharpUnit
         public TestException(string msg)
             : base(msg)
         {
-            // Set depth to two to capture the correct level at which the exception was thrown
+            // Set ignoreList to capture the correct level at which the exception was thrown
             //      - TestException constructor
             //      - Assert class method
+            //      - [UnityTestCase method]
             //      - TestCase method               <-- the level we want
-            int depth = 2;
+            string[] ignoreList = {"/TestException.cs", "/Assert.cs", "/UnityTestCase.cs"};
 
             // If the stack trace to this point is valid
             StackTrace trace = new StackTrace(true);
@@ -56,18 +57,23 @@ namespace SharpUnit
                 StackFrame frame = null;
                 for (int index = 0; index < trace.FrameCount; ++index)
                 {
-                    // If we have reached the desired depth
-                    if (index == depth)
+                    frame = trace.GetFrame(index);
+                    if (frame == null) 
                     {
-                        // If frame is valid
-                        frame = trace.GetFrame(index);
-                        if (null != frame)
+                        goto next;
+                    }
+                    foreach (string ignorefile in ignoreList)
+                    {
+                        if (0 < frame.GetFileName().IndexOf(ignorefile)) 
                         {
-                            // Set frame and break
-                            m_frame = frame;
-                            break;
+                            goto next;
                         }
                     }
+                    m_frame = frame;
+                    break;
+
+                    next:
+                        continue;
                 }
             }
         }
